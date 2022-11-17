@@ -66,3 +66,68 @@
       - observable4의 타입은 `Observable<Int>`
       - from 연산자는 일반적인 **array 각각 요소들을 하나씩** 방출한다
       - from 연산자는 **오직 array**만 사용한다
+
+### Observable 구독
+
+- Observable 실제로 sequence 정의일 뿐이다. Observable은 subscribe, 즉 구독되기 전에는 아무런 이벤트토 보내지 않는다. **그저 정의**일 뿐이다.
+
+1. **.subscribe()**
+
+   ```swift
+   let one = 1
+   let two = 2
+   let three = 3
+   
+   let observable = Observable.of(one, two, three)
+   	observable.subscribe({ (event) in
+   			 print(event)
+   		})
+    	
+    	/* Prints:
+    	 next(1)
+    	 next(2)
+    	 next(3)
+    	 completed
+    	*/
+   ```
+
+   - .subscribe는 escaping 클로저로 `Int`타입을 `Event`로 갖는다. escaping에 대한 리턴값은 없으며 `.subscribe`은 `Disposable`을 리턴한다.
+   - 프린트된 값을 보면, Observable은
+     - 1. 각각의 요소들에 대해 `.next` 이벤트를 방출했다.
+     - 1. 최종적으로 `.completed`를 방출했다.
+   - Observable을 이용하다보면, 대부분의 경우 Observable이 `.next`이벤트를 통해 방출하는 요소에 가장 관심가지게 될 것이다.
+
+2. **subscribe(onNext:)**
+
+   - 상기의 코드를 다음과 같이 바꿔보면
+
+   ```swift
+   observable.subscribe { event in
+    	if let element = event.element {
+    		print(element)
+    	}
+    }
+    
+    /* Prints:
+     1
+     2
+     3
+    */
+   ```
+
+   - 아주 자주 쓰이는 패턴이기 떄문에 RxSwift에는 이 부분에 대한 죽약형들이 있다.
+   - 즉, Observable이 방풀하는 `.next`, `.error`, `.completed` 같은 각각의 이벤트들에 대해 `subscribe` 연산자가 있다.
+
+   ```swift
+   observable.subscribe(onNext: { (element) in
+    	print(element)
+    })
+    
+    /* Prints:
+     1
+     2
+     3
+    */
+   ```
+
+   - `.onNext` 클로저는 `.next`이벤트만을 argument로 취한 뒤 핸들링할 것이고, 다른 것들은 모두 무시하게 된다.
