@@ -6,5 +6,6 @@ target 'RxSwiftPlayground' do
   use_frameworks!
 
   # Pods for RxSwiftPlayground
-  pod 'RxSwift'
+  pod "RxSwift"
+  pod "RxCocoa" 
 end
