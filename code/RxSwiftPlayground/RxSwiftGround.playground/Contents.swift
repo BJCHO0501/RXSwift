@@ -202,7 +202,7 @@ func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
 
 // MARK: - Variables
 
-print("=============Variables=============\n")
+print("=============BehaviorRelay=============\n")
 
 let variable = BehaviorRelay(value: "first")
 let disposeBag = DisposeBag()
@@ -218,4 +218,35 @@ variable.asObservable()
 
 brhavior.append("asdfa")
 variable.accept(brhavior)
+
+// MARK: - ignorElement
+
+Observable.of(1, 3, 4, 3)
+    .ignoreElements()
+    .subscribe({
+        print($0)
+    })
+    .disposed(by: disposeBag)
+
+// MARK: - elementAt
+
+Observable.of(1,2,3)
+    .element(at: 0)
+    .subscribe({
+        print($0)
+    })
+    .disposed(by: disposeBag)
+
+
+// MARK: - filter
+Observable.of(1, 2, 3, 4, 5, 6)
+    .filter { $0 < 4 }
+    .subscribe(
+        onNext: {
+            print($0)
+        }
+    )
+    .disposed(by: disposeBag)
+
+// MARK: - <#구역이름#>
 
