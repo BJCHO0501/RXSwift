@@ -202,51 +202,81 @@ func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
 
 // MARK: - Variables
 
-print("=============BehaviorRelay=============\n")
-
-let variable = BehaviorRelay(value: "first")
-let disposeBag = DisposeBag()
-
-var brhavior = variable.value
-
-
-variable.asObservable()
-    .subscribe {
-        print(label: "1)", event: $0)
-    }
-    .disposed(by: disposeBag)
-
-brhavior.append("asdfa")
-variable.accept(brhavior)
+//print("=============BehaviorRelay=============\n")
+//
+//let variable = BehaviorRelay(value: "first")
+//let disposeBag = DisposeBag()
+//
+//var brhavior = variable.value
+//
+//
+//variable.asObservable()
+//    .subscribe {
+//        print(label: "1)", event: $0)
+//    }
+//    .disposed(by: disposeBag)
+//
+//brhavior.append("asdfa")
+//variable.accept(brhavior)
 
 // MARK: - ignorElement
 
-Observable.of(1, 3, 4, 3)
-    .ignoreElements()
-    .subscribe({
-        print($0)
-    })
-    .disposed(by: disposeBag)
+//Observable.of(1, 3, 4, 3)
+//    .ignoreElements()
+//    .subscribe({
+//        print($0)
+//    })
+//    .disposed(by: disposeBag)
 
 // MARK: - elementAt
 
-Observable.of(1,2,3)
-    .element(at: 0)
-    .subscribe({
+//Observable.of(1,2,3)
+//    .element(at: 0)
+//    .subscribe({
+//        print($0)
+//    })
+//    .disposed(by: disposeBag)
+
+
+// MARK: - filter
+//Observable.of(1, 2, 3, 4, 5, 6)
+//    .filter { $0 < 4 }
+//    .subscribe(
+//        onNext: {
+//            print($0)
+//        }
+//    )
+//    .disposed(by: disposeBag)
+
+// MARK: - flatMapLast
+
+struct Student {
+    var score: BehaviorSubject<Int>
+}
+
+let disposeBag = DisposeBag()
+     
+let ryan = Student(score: BehaviorSubject(value: 80))
+let charlotte = Student(score: BehaviorSubject(value: 90))
+
+let student = PublishSubject<Student>()
+
+student
+    .flatMapLatest {
+        $0.score
+    }
+    .subscribe(onNext: {
         print($0)
     })
     .disposed(by: disposeBag)
 
+student.onNext(ryan)
+ryan.score.onNext(85)
 
-// MARK: - filter
-Observable.of(1, 2, 3, 4, 5, 6)
-    .filter { $0 < 4 }
-    .subscribe(
-        onNext: {
-            print($0)
-        }
-    )
-    .disposed(by: disposeBag)
+student.onNext(charlotte)
 
-// MARK: - <#구역이름#>
+// 1
+ryan.score.onNext(95)
+charlotte.score.onNext(100)
+
 
