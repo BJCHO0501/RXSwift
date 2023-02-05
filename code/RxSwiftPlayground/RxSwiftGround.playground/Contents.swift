@@ -250,33 +250,46 @@ func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
 
 // MARK: - flatMapLast
 
-struct Student {
-    var score: BehaviorSubject<Int>
-}
+//struct Student {
+//    var score: BehaviorSubject<Int>
+//}
+//
+//let disposeBag = DisposeBag()
+//
+//let ryan = Student(score: BehaviorSubject(value: 80))
+//let charlotte = Student(score: BehaviorSubject(value: 90))
+//
+//let student = PublishSubject<Student>()
+//
+//student
+//    .flatMapLatest {
+//        $0.score
+//    }
+//    .subscribe(onNext: {
+//        print($0)
+//    })
+//    .disposed(by: disposeBag)
+//
+//student.onNext(ryan)
+//ryan.score.onNext(85)
+//
+//student.onNext(charlotte)
+//
+//// 1
+//ryan.score.onNext(95)
+//charlotte.score.onNext(100)
 
-let disposeBag = DisposeBag()
-     
-let ryan = Student(score: BehaviorSubject(value: 80))
-let charlotte = Student(score: BehaviorSubject(value: 90))
 
-let student = PublishSubject<Student>()
+// MARK: - concatMap
 
-student
-    .flatMapLatest {
-        $0.score
-    }
-    .subscribe(onNext: {
-        print($0)
-    })
-    .disposed(by: disposeBag)
+let sequences = ["Germany": Observable.of("Berlin", "Münich", "Frankfurt"),
+              "Spain": Observable.of("Madrid", "Barcelona", "Valencia")]
 
-student.onNext(ryan)
-ryan.score.onNext(85)
+let observable = Observable.of("Germany", "Spain")
+ .concatMap({ country in
+     sequences[country] ?? .empty() })
 
-student.onNext(charlotte)
-
-// 1
-ryan.score.onNext(95)
-charlotte.score.onNext(100)
-
+_ = observable.subscribe(onNext: {
+ print($0)
+})
 
