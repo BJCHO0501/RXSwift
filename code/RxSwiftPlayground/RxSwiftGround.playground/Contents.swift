@@ -139,13 +139,13 @@ import RxCocoa
 
 //print("=============BehaviorSubjects=============\n")
 
-enum MyError: Error {
-    case anError
-}
-
-func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
-    print(label, event.element ?? event.error ?? event as Any)
-}
+//enum MyError: Error {
+//    case anError
+//}
+//
+//func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
+//    print(label, event.element ?? event.error ?? event as Any)
+//}
 //
 //let subject = BehaviorSubject(value: "Initial value")
 //let disposeBag = DisposeBag()
@@ -282,14 +282,51 @@ func print<T: CustomStringConvertible>(label: String, event: Event<T>) {
 
 // MARK: - concatMap
 
-let sequences = ["Germany": Observable.of("Berlin", "Münich", "Frankfurt"),
-              "Spain": Observable.of("Madrid", "Barcelona", "Valencia")]
+//let sequences = ["Germany": Observable.of("Berlin", "Münich", "Frankfurt"),
+//              "Spain": Observable.of("Madrid", "Barcelona", "Valencia")]
+//
+//let observable = Observable.of("Germany", "Spain")
+// .concatMap({ country in
+//     sequences[country] ?? .empty() })
+//
+//_ = observable.subscribe(onNext: {
+// print($0)
+//})
 
-let observable = Observable.of("Germany", "Spain")
- .concatMap({ country in
-     sequences[country] ?? .empty() })
+// MARK: - amb
 
-_ = observable.subscribe(onNext: {
- print($0)
-})
 
+//let right = PublishSubject<String>()
+//let left = PublishSubject<String>()
+//
+//let observable = left.amb(right)
+//let disposable = observable.subscribe(onNext: { value in
+//    print(value)
+//})
+//
+//left.onNext("Lisbon")
+//right.onNext("Copenhagen")
+//left.onNext("London")
+//left.onNext("Madrid")
+//right.onNext("Vienna")
+//
+//
+//disposable.dispose()
+
+// MARK: - reduce
+
+//let source = Observable.of(1, 4, 5)
+//
+//let observable = source.reduce(0, accumulator: { summary, new in
+//    return summary + new
+//})
+//
+//observable.subscribe(onNext: { print($0) })
+
+// MARK: - scan
+
+let source = Observable.of(1, 4, 5, 8)
+
+let observable = source.scan(0, accumulator: +)
+
+observable.subscribe(onNext: { print($0) })

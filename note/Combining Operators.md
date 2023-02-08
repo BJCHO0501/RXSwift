@@ -268,3 +268,138 @@ button.onNext(())
 
 - `withLatestFrom(_:)`과 거의 똑같이 작동하지만, 한 번만 방출한다. 즉 여러번 새로운 이벤트를 통해 방아쇠 당기기를 해도 한번만 작동한다.
 - `withLatestFrom(_:)`은 데이터 observable을 파라미터로 받고, `sample(_:)`은 trigger observable을 파라미터로 받는다. 주의하자.
+
+## Switches
+
+### amb(_:)
+
+![https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining Operators/8.switches.png?raw=true](https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining%20Operators/8.switches.png?raw=true)
+
+- `amb(_:)`에서 amb는 **ambigous(모호한)**이라 생각하면 된다.
+- 두가지 sequence의 이벤트 중 어떤 것을 구독할지 선택할 수 있게 한다.
+
+```swift
+let left = PublishSubject<String>()
+let right = PublishSubject<String>()
+
+let observable = left.amb(right)
+let disposable = observable.subscribe(onNext: { value in
+	print(value)
+})
+
+left.onNext("Lisbon") //left 먼저 요소를 방출하여 right구독 해지됨
+right.onNext("Copenhagen")
+left.onNext("London")
+left.onNext("Madrid")
+right.onNext("Vienna")
+
+disposable.dispose()
+
+//print
+Lisbon
+London
+Madrid
+```
+
+- 코드를 보면
+  - `left`와 `right`를 사이에 모호하게 작동할 observable을 만든다.
+  - 두 개의 observable에 모두 데이터를 보낸다.
+- `amb(_:)` 연산자는 `left`, `right` 두 개의 observable모두 구독한다. 그후 둘중 어떤 것이든 요소를 방출하는 것을 기다리다가 처음 요소를 방출한 observable외 다른 observable의 구독을 중단하고 처음 동작한 observable에 대해서만 요소를 늘어놓는다.
+- 처음에 어떤 observable에 관심이 있는지 알 수 없기 떄문에 일단 둘다 모호하게 구독한 후 시작한 다음 결정하는 것이다.
+
+### switchLatest()
+
+![https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining Operators/9.switchlatest.png?raw=true](https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining%20Operators/9.switchlatest.png?raw=true)
+
+- 사진을 보면 알겠지만 마지막으로 방출한 observable의 요소들만 방출하는 것이다.
+
+```swift
+let one = PublishSubject<String>()
+let two = PublishSubject<String>()
+let three = PublishSubject<String>()
+
+let source = PublishSubject<Observable<String>>()
+
+let observable = source.switchLatest()
+let disposable = observable.subscribe(onNext: { print($0) })
+
+source.onNext(one)
+one.onNext("Some text from sequence one")
+two.onNext("Some text from sequence two")
+
+source.onNext(two)
+two.onNext("More text from sequence two")
+one.onNext("and also from sequence one")
+
+source.onNext(three)
+two.onNext("Why don't you see me?")
+one.onNext("I'm alone, help me")
+three.onNext("Hey it's three. I win")
+
+source.onNext(one)
+one.onNext("Nope. It's me, one!")
+
+disposable.dispose()
+
+//print
+Some text from sequence one
+More text from sequence two
+Hey it's three. I win
+Nope. It's me, one!
+```
+
+- 코드를 따라가 보면
+  - `one`, `two`, `three`라는 subject를 생성한 후 이들을 `Observable<String>`을 요소로 받는 subject `source`를 생성한다.
+  - `source`에 `one`을 추가한 후 `one`에 값을 추가해본다.
+  - 위와같이 `two`, `three`도 값을 추가해본다
+- source observable로 들어온 마지막 sequence의 아이템만 구독하는 것을 볼 수 있다. 이것이 `switches` 와 `swichLatest`의 차이점이다.
+- 이는 전에 쓴 `flatMapLatest`와 유사하다
+
+## sequence내의 요소들간 결합
+
+### reduce(*:*:)
+
+![https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining Operators/10.reduce.png?raw=true](https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining%20Operators/10.reduce.png?raw=true)
+
+- 방출하는 sequence들을 연산하여 방출한다.
+
+```swift
+let source = Observable.of(1, 3, 5, 7, 9)
+
+// 1
+let observable = source.reduce(0, accumulator: +)
+observable.subscribe(onNext: { print($0) } )
+
+// 주석 1은 다음과 같은 의미다.
+// 2
+let observable2 = source.reduce(0, accumulator: { summary, newValue in
+   return summary + newValue
+})
+observable2.subscribe(onNext: { print($0) })
+```
+
+- `reduce`는 제공된 초기값부터 시작해서 observable이 값을 방출할 때마다 이 값을 가공한다.
+
+### scan(_:accumulator:)
+
+![https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining Operators/11. scan.png?raw=true](https://github.com/fimuxd/RxSwift/raw/master/Lectures/09_Combining%20Operators/11.%20scan.png?raw=true)
+
+- 그냥 보기에는 `reduce`와 비슷해보인다.
+
+```swift
+let source = Observable.of(1, 3, 5, 7, 9)
+
+let observable = source.scan(0, accumulator: +)
+observable.subscribe(onNext: { print($0) })
+
+/* Prints:
+1
+4
+9
+16
+25
+*/
+```
+
+- 출력의 다른점이라 하면 **중간값**들이 나온다는 것이다.
+- `scan`은 리턴값이 Observable이다.
